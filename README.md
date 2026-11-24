@@ -110,7 +110,7 @@ flowchart TD
 
 | Page 1: Overview | Page 2: Marketplace Performance |
 |---|---|
-| ![Overview](images/overview.png) | ![Marketplace Performance](images/marketplace_performance.png) |
+| ![Overview](overview.png) | ![Marketplace Performance](marketplace_performance.png) |
 
 **Page 1: Overview**
 - KPI cards: Net Revenue, Total Orders, Unique Customers, Avg Monthly Revenue
