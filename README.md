@@ -9,8 +9,6 @@
 
 ---
 
-## 👀 TL;DR for Recruiters
-
 | | |
 |---|---|
 | **Problem** | A marketplace has raw, multi-table order data but no single trusted view of sales, customers and delivery performance. |
@@ -110,8 +108,6 @@ flowchart TD
 
 ## 📊 Dashboard
 
-> 📸 *Add your screenshots to `/images` and update the paths below.*
-
 | Page 1: Overview | Page 2: Marketplace Performance |
 |---|---|
 | ![Overview](images/overview.png) | ![Marketplace Performance](images/marketplace_performance.png) |
@@ -163,32 +159,6 @@ olist-ecommerce-analytics/
 
 ---
 
-## 🚀 How to Run It
-
-**Prerequisites:** Python 3.9+, MySQL 8+, Power BI Desktop, a Kaggle account (for `kagglehub`).
-
-```bash
-# 1. Install dependencies
-pip install pandas sqlalchemy pymysql python-dotenv kagglehub jupyter
-
-# 2. Create the raw database in MySQL
-mysql -u <user> -p -e "CREATE DATABASE IF NOT EXISTS adworks_raw;"
-
-# 3. Add your credentials (copy .env.example to .env)
-#    MYSQL_USERNAME=your_user
-#    MYSQL_PASSWORD=your_password
-
-# 4. Run the notebook to download and load the raw tables
-jupyter notebook notebooks/olist.ipynb
-
-# 5. Run the SQL script to build staging and analytics layers
-mysql -u <user> -p < sql/olist_cleaning.sql
-
-# 6. Open dashboard/olist_ecommerce.pbix and point the data source
-#    to your local MySQL (adworks_analytics.sales_data)
-```
-
----
 
 ## 🧪 Data Quality and Design Decisions
 
@@ -208,10 +178,5 @@ mysql -u <user> -p < sql/olist_cleaning.sql
 - [ ] Schedule the pipeline (Airflow or cron) for automated refresh
 
 ---
-
-## 👤 About Me
-
-**[Your Name]** · Data Analyst
-📧 [your.email@example.com] · 💼 [LinkedIn URL] · 🌐 [Portfolio URL]
 
 *If this project was useful or interesting, a ⭐ on the repo is appreciated!*
