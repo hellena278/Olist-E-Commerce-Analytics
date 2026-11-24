@@ -1,6 +1,6 @@
 # 🛒 Olist E-Commerce Analytics: From Raw CSVs to Executive Dashboard
 
-> **End-to-end analytics project** that turns 9 messy Brazilian e-commerce CSV files into a clean, query-ready MySQL warehouse and a 2-page Power BI dashboard covering revenue, customers, product categories and delivery performance.
+> **End-to-end analytics project** that turns 5 messy Brazilian e-commerce CSV files into a clean, query-ready MySQL warehouse and a 2-page Power BI dashboard covering revenue, customers, product categories and delivery performance.
 
 ![Python](https://img.shields.io/badge/Python-pandas%20%7C%20SQLAlchemy-3776AB?logo=python&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-3--layer%20warehouse-4479A1?logo=mysql&logoColor=white)
@@ -82,12 +82,20 @@ flowchart TD
 
 ---
 
-## 🧭 Business Questions Answered
+## Business Questions Answered & How I Solved Them
 
-- 💰 How much revenue are we generating, and how does it trend month by month?
-- 👥 How many unique customers do we serve, and what is the average order value?
-- 📦 Which product categories and cities drive the most revenue?
-- 🚚 Are we delivering on time, and which states struggle most?
+### 1. How is revenue growing, and is the trend reliable?
+* **What I found:** Net revenue hit **R\$ 13.50M** across **98K valid orders**, peaking in **November 2017 (Black Friday)** and sustaining an average of **R\$ 909K/month** through August 2018—beating full-year 2017 in just 8 months.
+* **How I solved it:** Spotted that **September 2018** contained only 1 order (a dataset cutoff artifact) and 2016 had only 3 partial launch months. Filtered out September 2018 in Power BI so monthly averages reflect true operational performance without fake drops.
+
+### 2. Are customers coming back, and how big are their shopping carts?
+* **What I found:** Out of **95K unique customers**, roughly **97% placed only one order**, and shoppers averaged **1.14 units per order** (**R\$ 137.43** Average Order Value).
+* **How I solved it:** Separated `order_key` (unique checkouts) from `quantity` (individual item lines) in SQL and DAX (`DISTINCTCOUNT` vs. `SUM`) to prove Olist's growth relied almost entirely on new single-item buyers rather than repeat loyalty.
+
+### 3. Why do orders arrive late, and which areas slow down shipping?
+* **What I found:** Overall on-time delivery hit **93%**, arriving an average of **12.03 days early** (`-12.03` variance). However, whenever monthly orders jumped past **7,000** (Nov 2017 & Feb–Mar 2018), on-time delivery dropped to **~80%–85%**. Regionally, distant northern states (**Pará / PA**) and high-volume Southeast hubs (**Rio de Janeiro / RJ**, **Espírito Santo / ES**) suffered the lowest on-time rates, regardless of item price.
+* **How I solved it:** Engineered `DATEDIFF(delivered_date, estimated_date)` in SQL, then built a monthly volume-vs.-SLA combo chart, a price-vs.-delay scatter plot, and a Bottom 10 States ranking in Power BI.
+
 
 ---
 
@@ -131,14 +139,13 @@ flowchart TD
 
 ---
 
-## 💡 Key Insights
+## Key Insights
 
-> ✏️ *Replace these with your own findings. Recruiters love a clear "so what".*
+1. **Revenue:** Total net revenue reached **R$ 13.50M** across **98K orders**, peaking in **November 2017** (Black Friday) and sustaining an average of **R$ 909K/month** through August 2018—surpassing full-year 2017 in just 8 months *(Sept 2018 excluded as an incomplete dataset cutoff)*.
+2. **Categories:** Lifestyle and personal goods lead sales—**Health & Beauty** and **Watches & Gifts** are the top revenue drivers, while shoppers average **1.14 items per order** (**R$ 137.43** Average Order Value), showing strong single-item buying habits.
+3. **Geography:** **São Paulo (R$ 1.90M)** generates nearly double the revenue of #2 **Rio de Janeiro (R$ 0.99M)**, but distant northern states like **Pará (PA)** and high-volume hubs like **Rio de Janeiro (RJ)** and **Espírito Santo (ES)** suffer the weakest on-time delivery rates.
+4. **Delivery:** **93%** of orders arrive on or before their estimated date—averaging **12.03 days early**—though on-time delivery drops to **~80%–85%** whenever monthly orders surge past **7,000** during major sales rushes.
 
-1. **Revenue:** ______ (e.g. "Revenue grew X% between 2017 and 2018, peaking in November.")
-2. **Categories:** ______ (e.g. "Top 5 categories generate X% of revenue.")
-3. **Geography:** ______ (e.g. "São Paulo state leads revenue, but state Y has the weakest on-time rate.")
-4. **Delivery:** ______ (e.g. "X% of orders arrive on or before the estimated date.")
 
 ---
 
