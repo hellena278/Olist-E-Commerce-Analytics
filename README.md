@@ -1,12 +1,11 @@
-# Olist-E-Commerce-Analytics
 # 🛒 Olist E-Commerce Analytics: From Raw CSVs to Executive Dashboard
 
-> **End-to-end analytics project** that transforms 9 messy Brazilian e-commerce CSV files into a clean, query-ready **3-layer MySQL warehouse** (`raw -> staging -> analytics`) and a **2-page Power BI dashboard** uncovering revenue growth, customer buying habits, and delivery bottlenecks.
+> **End-to-end analytics project** that turns 9 messy Brazilian e-commerce CSV files into a clean, query-ready MySQL warehouse and a 2-page Power BI dashboard covering revenue, customers, product categories and delivery performance.
 
-![Python](https://shields.io)
-![MySQL](https://shields.io)
-![Power BI](https://shields.io)
-![Kaggle](https://shields.io)
+![Python](https://img.shields.io/badge/Python-pandas%20%7C%20SQLAlchemy-3776AB?logo=python&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-3--layer%20warehouse-4479A1?logo=mysql&logoColor=white)
+![Power BI](https://img.shields.io/badge/Power%20BI-DAX%20%7C%20Data%20Modeling-F2C811?logo=powerbi&logoColor=black)
+![Dataset](https://img.shields.io/badge/Data-Olist%20Brazilian%20E--Commerce-0A66C2)
 
 ---
 
@@ -14,14 +13,14 @@
 
 | | |
 |---|---|
-| **Problem** | A marketplace has 112K+ rows of raw, multi-table order data but no single trusted view of sales growth, customer retention, and regional delivery delays. |
-| **What I built** | An automated **ETL pipeline** (Python -> MySQL), a **raw -> staging -> analytics** SQL warehouse, and an **interactive 2-page Power BI report**. |
-| **Skills shown** | ETL automation, SQL surrogate key modeling (`ROW_NUMBER`, `DENSE_RANK`), data quality auditing, DAX KPI design, and executive storytelling. |
-| **Dataset** | [Olist Brazilian E-Commerce](https://kaggle.com) (98K+ valid delivered orders across 112K item lines, Sept 2016 – Aug 2018) |
+| **Problem** | A marketplace has raw, multi-table order data but no single trusted view of sales, customers and delivery performance. |
+| **What I built** | An automated **ETL pipeline** (Python → MySQL), a **raw → staging → analytics** SQL warehouse, and an **interactive Power BI report**. |
+| **Skills shown** | Data extraction and loading, SQL data cleaning and modeling, window functions, data profiling, KPI design in DAX, dashboard storytelling. |
+| **Dataset** | [Olist Brazilian E-Commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (about 100k orders, 2016 to 2018) |
 
 ---
 
-## 🔄 End-to-End Architecture
+## 🔄 Workflow
 
 ```mermaid
 flowchart LR
@@ -31,7 +30,7 @@ flowchart LR
     D[("MySQL<br/>adworks_staging<br/>cleaned and keyed")]
     E[("MySQL<br/>adworks_analytics<br/>sales_data")]
     F["Power BI<br/>data model and DAX"]
-    G["Dashboard<br/>Overview & Marketplace<br/>Performance"]
+    G["Dashboard<br/>Overview and<br/>Marketplace Performance"]
 
     A -->|download| B
     B -->|to_sql| C
@@ -49,68 +48,170 @@ flowchart LR
     style G fill:#f3e8fd,stroke:#8e5bb5,color:#111
 ```
 
+### How the staging layer connects
+
+```mermaid
+flowchart TD
+    subgraph RAW["adworks_raw"]
+        r1[customers]
+        r2[products]
+        r3[product_category_name_translation]
+        r4[orders]
+        r5[order_items]
+    end
+
+    subgraph STG["adworks_staging"]
+        s1["customers<br/>C000001-style keys"]
+        s2["products<br/>P00001-style keys<br/>English categories"]
+        s3["transactions<br/>one row per order line"]
+    end
+
+    subgraph ANA["adworks_analytics"]
+        a1["sales_data<br/>flat table for BI"]
+    end
+
+    r1 --> s1
+    r2 --> s2
+    r3 --> s2
+    r4 --> s3
+    r5 --> s3
+    s1 --> s3
+    s2 --> s3
+    s3 --> a1
+    s1 --> a1
+    s2 --> a1
+```
+
 ---
 
-## 📊 Dashboard Preview
+## 🧭 Business Questions Answered
 
-> 📸 *Save your two dashboard screenshots inside `/images` as `overview.png` and `marketplace_performance.png`.*
+- 💰 How much revenue are we generating, and how does it trend month by month?
+- 👥 How many unique customers do we serve, and what is the average order value?
+- 📦 Which product categories and cities drive the most revenue?
+- 🚚 Are we delivering on time, and which states struggle most?
 
-| Page 1: Executive Overview | Page 2: Marketplace & Delivery Performance |
+---
+
+## 🧱 What Each Layer Does
+
+| Layer | Tool | What happens |
+|---|---|---|
+| **1. Extract and Load** | Python (`olist.ipynb`) | Downloads the dataset with `kagglehub`, normalizes table names, and loads every CSV into MySQL using `pandas.to_sql`. Credentials are read from a `.env` file, never hardcoded. |
+| **2. Staging (clean)** | SQL (`olist_cleaning.sql`) | Replaces 32-character IDs with readable surrogate keys, translates Portuguese categories to English, fills missing categories as `uncategorized`, trims and standardizes city and state text, casts text to `DATETIME`. |
+| **3. Transactions** | SQL | Joins orders, order items, customers and products into one structured fact table with order, delivery and estimated dates, price and freight. |
+| **4. Analytics** | SQL | Builds a flat `sales_data` table with delivery delay days, quantity and revenue, filtered to valid rows (no null keys, price above 0). |
+| **5. Visualize** | Power BI | Star-style model with a Calendar table, DAX measures and two report pages. |
+
+### SQL techniques used
+`ROW_NUMBER()` and `DENSE_RANK()` window functions · `CTAS` (create table as select) · `LEFT` / `INNER JOIN` · `COALESCE` / `NULLIF` · `CASE` logic · string cleaning (`TRIM`, `LOWER`, `UPPER`, `LPAD`) · date functions (`DATEDIFF`, `DATE_FORMAT`) · profiling queries for NULL and duplicate checks
+
+---
+
+## 📊 Dashboard
+
+> 📸 *Add your screenshots to `/images` and update the paths below.*
+
+| Page 1: Overview | Page 2: Marketplace Performance |
 |---|---|
 | ![Overview](images/overview.png) | ![Marketplace Performance](images/marketplace_performance.png) |
 
----
+**Page 1: Overview**
+- KPI cards: Net Revenue, Total Orders, Unique Customers, Avg Monthly Revenue
+- Revenue trend over time (area chart)
+- Top product categories and top cities by revenue
+- On-Time Delivery % gauge
+- Year and month slicer
 
-## Business Questions Answered & How I Solved Them
+**Page 2: Marketplace Performance**
+- KPI cards: Avg Order Value, Units per Order, Avg Delivery Delay (days)
+- On-Time Delivery % by customer state
+- Category performance bubble chart (bubble size = total orders)
+- Monthly orders and revenue combo chart
+- Year and month slicer
 
-### 1. 💰 How is revenue growing, and is the trend reliable?
-* **What I found:** Net revenue hit **R\$ 13.50M** across **98K valid orders**, surging to an all-time peak in **November 2017 (Black Friday)** and sustaining with average of **R\$ 909K/month** through August 2018—beating full-year 2017 in just 8 months.
-* **How I solved it:** Identified that **September 2018** contained only 1 order (a dataset cutoff artifact) and 2016 had only 3 partial launch months. Filtered out September 2018 in Power BI so monthly averages shows actual performance without fake drops.
-
-### 2. 👥 Are customers coming back, and how many items they usually purchased?
-* **What I found:** Out of **95K unique customers**, roughly **97% placed only one order**, and shoppers averaged **1.14 units per order** (**R\$ 137.43** Average Order Value).
-* **How I solved it:** Separated `order_key` (unique checkouts) from `quantity` (individual item lines) in SQL and DAX (`DISTINCTCOUNT` vs. `SUM`) to prove Olist's growth relied almost entirely on new single-item buyers rather than repeat loyalty.
-
-### 3. 🚚 Why do orders arrive late, and which areas slow down shipping?
-* **What I found:** Overall on-time delivery hit **93%**, arriving an average of **12.03 days early** (`-12.03` variance). However, whenever monthly orders jumped past **7,000** (Nov 2017 & Feb–Mar 2018), on-time delivery dropped to **~80%–85%**. Based on region, distant northern states (**Pará / PA**) and high-volume Southeast hubs (**Rio de Janeiro / RJ**, **Espírito Santo / ES**) suffered the lowest on-time rates, regardless of item price.
-* **How I solved it:** Engineered `DATEDIFF(delivered_date, estimated_date)` in SQL, then built a monthly volume-vs.-SLA combo chart, a price-vs.-delay scatter plot, and a Bottom 10 States ranking in Power BI.
-
----
-
-## How Business Owner Can Take Actions
-
-* **Split Busy Delivery Districts & Add Local Couriers:** Partner with extra local delivery services in high-delay states (**RJ**, **ES**, **PA**) and break busy districts into smaller delivery batches so drivers aren't overloaded during sales rushes.
-* **Increase Basket Size (`1.14` -> `1.30+` Units/Order):** Introduce bundle deals or free-shipping thresholds above **R\$ 150** to encourage multi-item checkouts.
-* **Turn One-Time Buyers into Repeat Shoppers:** Trigger automated thank-you discount vouchers right after early deliveries to boost customer retention.
-* **Keep Safe Delivery Windows:** Maintain conservative shipping estimates that allow Olist to delight shoppers by arriving **12 days early** on average.
+### 📐 Key DAX measures
+`Net Revenue` · `Total Orders` · `Unique Customers` · `Avg Monthly Revenue` · `Avg Order Value` · `Units per Order` · `On-Time Delivery %`
 
 ---
 
-## 🧱 Warehouse & Pipeline Architecture
+## 💡 Key Insights
 
-| Layer | Tool | What Happens |
-|---|---|---|
-| **1. Extract & Load** | Python (`olist.ipynb`) | Downloads the Kaggle dataset via `kagglehub`, normalizes table names, and loads all 9 CSVs into `adworks_raw` using `SQLAlchemy` + `.env` security. |
-| **2. Staging (Clean)** | SQL (`olist_cleaning.sql`) | Replaces 32-character hash IDs with readable surrogate keys (`C000001`, `P00001`, `O000001`), maps Portuguese categories to English (`COALESCE` fallback to `uncategorized`), and standardizes city/state text. |
-| **3. Analytics Mart** | SQL (`adworks_analytics.sales_data`) | Joins staging tables into a clean denormalized fact table, calculates `delivery_delay_days`, and filters out invalid/zero-price rows. |
-| **4. BI & DAX** | Power BI (`olist_ecommerce.pbix`) | Connects `sales_data` to a **Calendar** table and computes `Net Revenue` and `Total Orders` (excluding `canceled` and `unavailable` statuses). |
+> ✏️ *Replace these with your own findings. Recruiters love a clear "so what".*
+
+1. **Revenue:** ______ (e.g. "Revenue grew X% between 2017 and 2018, peaking in November.")
+2. **Categories:** ______ (e.g. "Top 5 categories generate X% of revenue.")
+3. **Geography:** ______ (e.g. "São Paulo state leads revenue, but state Y has the weakest on-time rate.")
+4. **Delivery:** ______ (e.g. "X% of orders arrive on or before the estimated date.")
 
 ---
 
 ## 🗂️ Repository Structure
 
-```text
-Online-Retail-End-to-End-Analytics-Project/
+```
+olist-ecommerce-analytics/
 ├── notebooks/
-│   └── olist.ipynb                  # Automated Kaggle -> MySQL raw ingestion
+│   └── olist.ipynb              # Extract and load: Kaggle → MySQL (raw)
 ├── sql/
-│   └── olist_cleaning.sql           # Raw -> Staging -> Analytics transformations
+│   └── olist_cleaning.sql       # Staging and analytics layers
 ├── dashboard/
-│   └── olist_ecommerce.pbix         # 2-page Power BI report file
-├── images/
-│   ├── overview.png                 # Page 1: Executive Overview screenshot
-│   └── marketplace_performance.png  # Page 2: Marketplace Performance screenshot
-├── .env.example                     # Template for MySQL credentials
-└── README.md                        # Project documentation, findings, and solutions
+│   └── olist_ecommerce.pbix     # Power BI report
+├── images/                      # Dashboard screenshots
+├── .env.example                 # Template for DB credentials
+└── README.md
 ```
 
+---
+
+## 🚀 How to Run It
+
+**Prerequisites:** Python 3.9+, MySQL 8+, Power BI Desktop, a Kaggle account (for `kagglehub`).
+
+```bash
+# 1. Install dependencies
+pip install pandas sqlalchemy pymysql python-dotenv kagglehub jupyter
+
+# 2. Create the raw database in MySQL
+mysql -u <user> -p -e "CREATE DATABASE IF NOT EXISTS adworks_raw;"
+
+# 3. Add your credentials (copy .env.example to .env)
+#    MYSQL_USERNAME=your_user
+#    MYSQL_PASSWORD=your_password
+
+# 4. Run the notebook to download and load the raw tables
+jupyter notebook notebooks/olist.ipynb
+
+# 5. Run the SQL script to build staging and analytics layers
+mysql -u <user> -p < sql/olist_cleaning.sql
+
+# 6. Open dashboard/olist_ecommerce.pbix and point the data source
+#    to your local MySQL (adworks_analytics.sales_data)
+```
+
+---
+
+## 🧪 Data Quality and Design Decisions
+
+- **Surrogate keys** (`C000001`, `P00001`, `O000001`) replace long hash IDs so tables are easier to read and join.
+- **Uncategorized fallback** keeps products with missing categories in the analysis instead of dropping them.
+- **Revenue** is defined as item price (freight is tracked separately in staging).
+- **Delivery delay** = delivered date minus estimated date (negative means early).
+- **Raw layer is never modified**, so every transformation is repeatable and auditable.
+
+---
+
+## 🔭 Next Steps
+
+- [ ] Add `order_payments` and `order_reviews` for payment-mix and customer-satisfaction analysis
+- [ ] Add seller-level performance
+- [ ] Customer segmentation (RFM) and repeat-purchase analysis
+- [ ] Schedule the pipeline (Airflow or cron) for automated refresh
+
+---
+
+## 👤 About Me
+
+**[Your Name]** · Data Analyst
+📧 [your.email@example.com] · 💼 [LinkedIn URL] · 🌐 [Portfolio URL]
+
+*If this project was useful or interesting, a ⭐ on the repo is appreciated!*
